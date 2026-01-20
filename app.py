@@ -235,12 +235,12 @@ def main():
     models, metadata = load_models()
     
     if models is None:
-        st.error("⚠️ Models not found. Please train the model first by running 'train_model.py'")
+        st.error(" Models not found. Please train the model first by running 'train_model.py'")
         return
     
     # Sidebar for input
     with st.sidebar:
-        st.header("📝 Your Information")
+        st.header(" Your Information")
         st.markdown("---")
         
         # Age input
@@ -268,19 +268,19 @@ def main():
         )
         
         st.markdown("---")
-        predict_button = st.button("🔮 Get Career Recommendation", use_container_width=True)
+        predict_button = st.button(" Get Career Recommendation", use_container_width=True)
     
     # Main content area
     if predict_button:
         # Validation
         if not skills:
-            st.warning("⚠️ Please select at least one skill")
+            st.warning(" Please select at least one skill")
             return
         if not interests:
-            st.warning("⚠️ Please select at least one interest")
+            st.warning(" Please select at least one interest")
             return
         
-        with st.spinner("🤖 Analyzing your profile with ensemble AI models..."):
+        with st.spinner(" Analyzing your profile with ensemble AI models..."):
             # Preprocess input
             input_tensor = preprocess_input(age, education, skills, interests, metadata)
             
@@ -307,7 +307,7 @@ def main():
                 st.plotly_chart(create_top_predictions_chart(metadata['career_classes'], all_probs), use_container_width=True)
             
             with col3:
-                st.markdown("### 📊 Your Profile Summary")
+                st.markdown("###  Your Profile Summary")
                 st.markdown(f"**Age:** {age}")
                 st.markdown(f"**Education:** {education}")
                 st.markdown(f"**Skills:** {len(skills)} selected")
@@ -318,7 +318,7 @@ def main():
             
             # Career Roadmap Section
             st.markdown("---")
-            st.markdown("## 🗺️ Your Career Roadmap")
+            st.markdown("##  Your Career Roadmap")
             
             roadmap = get_career_roadmap(predicted_career)
             
@@ -336,7 +336,7 @@ def main():
             
             # Job Search Links Section
             st.markdown("---")
-            st.markdown("## 🔍 Find Jobs")
+            st.markdown("# Find Jobs")
             
             job_links = get_job_search_links(predicted_career)
             
@@ -347,7 +347,7 @@ def main():
             
             # Alternative career suggestions
             st.markdown("---")
-            st.markdown("## 🔄 Alternative Career Paths")
+            st.markdown("# Alternative Career Paths")
             
             # Get top 3 alternatives (excluding the top prediction)
             top_5_idx = np.argsort(all_probs)[-5:][::-1]
