@@ -1,6 +1,3 @@
-"""
-Career data including roadmaps, job search links, and reference lists
-"""
 
 # Education levels 
 EDUCATION_LEVELS = [
