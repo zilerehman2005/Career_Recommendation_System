@@ -2,7 +2,7 @@
 Career data including roadmaps, job search links, and reference lists
 """
 
-# Education levels (based on your dataset)
+# Education levels 
 EDUCATION_LEVELS = [
     "PhD",
     "Master's",
@@ -14,7 +14,7 @@ EDUCATION_LEVELS = [
     "High School"
 ]
 
-# Common skills from your dataset
+# Common skills 
 SKILLS_LIST = [
     # Programming Languages
     "Python", "JavaScript", "Java", "C++", "C#", "Go", "Rust", "TypeScript", "Swift", "Kotlin",
