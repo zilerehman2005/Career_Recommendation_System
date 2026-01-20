@@ -17,13 +17,12 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-# ─── 1. Load & Preprocess ────────────────────────────────────────
-print("="*70)
+# ───  Load & Preprocess ────────────────────────────────────────
 print("AI Career Recommendation - Ensemble Model Training")
-print("="*70)
+print("-------------")
 print("\n Loading data...")
 df = pd.read_csv("AI_Career_Recommendation_8000.csv")
-print(f"✓ Loaded {len(df)} records")
+print(f" Loaded {len(df)} records")
 
 # Drop unnecessary columns
 df = df.drop(columns=['CandidateID', 'Name', 'Recommendation_Score'], errors='ignore')
@@ -37,10 +36,10 @@ class_to_idx = {c: i for i, c in enumerate(career_classes)}
 y_encoded = y.map(class_to_idx).values
 num_classes = len(career_classes)
 
-print(f"✓ Found {num_classes} career classes")
-print(f"✓ Careers: {', '.join(career_classes[:5])}..." if len(career_classes) > 5 else f"✓ Careers: {', '.join(career_classes)}")
+print(f" Found {num_classes} career classes")
+print(f" Careers: {', '.join(career_classes[:5])}..." if len(career_classes) > 5 else f"✓ Careers: {', '.join(career_classes)}")
 
-# ─── 2. Feature Engineering ─────────────────────────────────────
+# ───  Feature Engineering ─────────────────────────────────────
 print("\n Engineering features...")
 
 # Age
@@ -73,20 +72,20 @@ for interest in interests_set:
 X = X.drop(columns=['Interests'])
 interest_cols = [col for col in X.columns if col.startswith('Interests_') and col not in interests_col_before]
 
-print(f"✓ Total features: {X.shape[1]}")
+print(f"  - Total features: {X.shape[1]}")
 print(f"  - Education categories: {len(education_cols)}")
 print(f"  - Skills: {len(skill_cols)}")
 print(f"  - Interests: {len(interest_cols)}")
 
-# ─── 3. Train-Test Split ────────────────────────────────────────
+# ───  Train-Test Split ────────────────────────────────────────
 print("\n Splitting data...")
 X_train, X_test, y_train, y_test = train_test_split(
     X, y_encoded, test_size=0.20, random_state=42, stratify=y_encoded
 )
-print(f"✓ Training set: {len(X_train)} samples")
-print(f"✓ Test set: {len(X_test)} samples")
+print(f" Training set: {len(X_train)} samples")
+print(f" Test set: {len(X_test)} samples")
 
-# ─── 4. Scale Features ──────────────────────────────────────────
+# ───  Scale Features ──────────────────────────────────────────
 print("\n Scaling features...")
 scaler = StandardScaler()
 X_train[['Age']] = scaler.fit_transform(X_train[['Age']])
@@ -95,13 +94,13 @@ X_test[['Age']] = scaler.transform(X_test[['Age']])
 X_train = X_train.astype(np.float32)
 X_test = X_test.astype(np.float32)
 
-# ─── 5. Apply SMOTE ─────────────────────────────────────────────
+# ───  Apply SMOTE ─────────────────────────────────────────────
 print("\nApplying SMOTE for class balance...")
 smote = SMOTE(random_state=42)
 X_train_sm, y_train_sm = smote.fit_resample(X_train, y_train)
-print(f"✓ Balanced training set: {len(X_train_sm)} samples")
+print(f" Balanced training set: {len(X_train_sm)} samples")
 
-# ─── 6. Create DataLoaders ──────────────────────────────────────
+# ───  Create DataLoaders ──────────────────────────────────────
 train_ds = TensorDataset(
     torch.from_numpy(X_train_sm.values), 
     torch.from_numpy(y_train_sm).long()
@@ -114,7 +113,7 @@ test_ds = TensorDataset(
 train_loader = DataLoader(train_ds, batch_size=128, shuffle=True)
 test_loader = DataLoader(test_ds, batch_size=256, shuffle=False)
 
-# ─── 7. MLP Model Definition ────────────────────────────────────
+# ───  MLP Model Definition ────────────────────────────────────
 class MLP(nn.Module):
     def __init__(self, in_features, num_classes):
         super().__init__()
@@ -127,7 +126,7 @@ class MLP(nn.Module):
     def forward(self, x):
         return self.net(x)
 
-# ─── 8. Train One Model ─────────────────────────────────────────
+# ─── Train One Model ─────────────────────────────────────
 def train_one_model(seed, model_idx):
     torch.manual_seed(seed)
     model = MLP(X.shape[1], num_classes)
@@ -157,7 +156,7 @@ def train_one_model(seed, model_idx):
     
     return model, losses
 
-# ─── 9. Train Ensemble ──────────────────────────────────────────
+# ─── Train Ensemble ──────────────────────────────────────────
 print("\n" + "="*70)
 print("Training Ensemble (5 Models)")
 print("="*70)
@@ -171,14 +170,14 @@ for i, seed in enumerate(seeds, 1):
     models.append(model)
     all_losses.append(losses)
 
-# ─── 10. Save Models ────────────────────────────────────────────
+# ───  Save Models ────────────────────────────────────────────
 print("\n Saving models...")
 os.makedirs('models', exist_ok=True)
 
 # Save each model
 for i, model in enumerate(models):
     torch.save(model.state_dict(), f'models/model_{i}.pth')
-print(f"✓ Saved {len(models)} model files")
+print(f" Saved {len(models)} model files")
 
 # Save metadata
 metadata = {
@@ -195,9 +194,9 @@ metadata = {
 
 with open('models/model_metadata.pkl', 'wb') as f:
     pickle.dump(metadata, f)
-print("✓ Saved model metadata")
+print("Saved model metadata")
 
-# ─── 11. Evaluate Ensemble ──────────────────────────────────────
+# ───  Evaluate Ensemble ──────────────────────────────────────
 print("\nEvaluating ensemble on test set...")
 
 def ensemble_predict(loader):
@@ -223,7 +222,7 @@ prec, rec, f1, _ = precision_recall_fscore_support(
     y_test, y_pred, average='macro', zero_division=0
 )
 
-# ─── 12. Display Results ────────────────────────────────────────
+# ───  Display Results ────────────────────────────────────────
 print("\n" + "="*70)
 print("ENSEMBLE TRAINING COMPLETE!")
 print("="*70)
@@ -233,8 +232,8 @@ print(f"   Precision: {prec:.4f}")
 print(f"   Recall:    {rec:.4f}")
 print(f"   F1-Score:  {f1:.4f}")
 
-# Per-class performance (top 10 classes)
-print(f"\nPer-Class Performance (Top 10):")
+# Per-class performance 
+print(f"\nPer-Class Performance :")
 report = classification_report(y_test, y_pred, target_names=career_classes, output_dict=True, zero_division=0)
 class_f1_scores = [(career, report[career]['f1-score']) for career in career_classes]
 class_f1_scores.sort(key=lambda x: x[1], reverse=True)
@@ -242,7 +241,7 @@ class_f1_scores.sort(key=lambda x: x[1], reverse=True)
 for i, (career, f1_score) in enumerate(class_f1_scores[:10], 1):
     print(f"   {i:2d}. {career:30s} F1: {f1_score:.4f}")
 
-# ─── 13. Plot Loss Curve ────────────────────────────────────────
+# ───  Plot Loss Curve ────────────────────────────────────────
 print("\nCreating loss curve visualization...")
 avg_losses = np.mean(all_losses, axis=0)
 
